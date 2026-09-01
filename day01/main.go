@@ -32,6 +32,25 @@ func SolvePartOne(masses []int) int {
 	}
 
 	return res
+}
+
+func FindFuelRecursive(fuel int) int {
+
+	if fuel <= 0 {
+		return 0
+	}
+
+	ff := max(fuel/3-2, 0)
+	return ff + FindFuelRecursive(ff)
+
+}
+
+func SolvePartTwo(masses []int) int {
+	var res int
+	for _, m := range masses {
+		res += FindFuelRecursive(m)
+	}
+	return res
 
 }
 
@@ -49,4 +68,7 @@ func main() {
 
 	res := SolvePartOne(masses)
 	fmt.Println(res)
+
+	res2 := SolvePartTwo(masses)
+	fmt.Println(res2)
 }
