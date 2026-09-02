@@ -2,13 +2,10 @@ package main
 
 import "fmt"
 
-func SolvePartOne(lower int, upper int) int {
-
-	var valid []int
-
+func GetIncreasingAdjacents() []int {
+	var res []int
 	var recurse func(curr int, adjacent bool, digit int)
 	recurse = func(curr int, adjacent bool, digit int) {
-
 		// Add the digit
 		curr = curr*10 + digit
 
@@ -20,7 +17,7 @@ func SolvePartOne(lower int, upper int) int {
 		// exit condition: curr is out of bounds (six digit number with adj digit)
 		if 99999 < curr && curr < 1_000_000 {
 			if adjacent {
-				valid = append(valid, curr)
+				res = append(res, curr)
 			}
 			return
 		}
@@ -37,12 +34,19 @@ func SolvePartOne(lower int, upper int) int {
 			adjacent = true
 		}
 		recurse(curr, adjacent, digit)
-
 	}
-
 	for i := 1; i < 10; i++ {
 		recurse(0, false, i)
 	}
+
+	return res
+}
+
+func SolvePartOne(lower int, upper int) int {
+
+	var valid []int
+
+	valid = GetIncreasingAdjacents()
 
 	var count int
 	for _, num := range valid {
