@@ -15,6 +15,10 @@ type Pos struct {
 	Y int
 }
 
+func (p Pos) GetManhattanDistance() int {
+	return common.IntAbs(p.X) + common.IntAbs(p.Y)
+}
+
 type Wire struct {
 	Commands []Command
 	Points   map[Pos]bool
@@ -40,12 +44,12 @@ func (w *Wire) GetPoints() {
 		if dx != 0 {
 			startX := curr.X
 			if dx < 0 {
-				for x := startX; x > startX+dx; x-- {
+				for x := startX; x > startX+dx-1; x-- {
 					curr.X = x
 					w.Points[curr] = true
 				}
 			} else {
-				for x := startX; x < startX+dx; x++ {
+				for x := startX; x < startX+dx+1; x++ {
 					curr.X = x
 					w.Points[curr] = true
 				}
@@ -56,12 +60,12 @@ func (w *Wire) GetPoints() {
 		if dy != 0 {
 			startY := curr.Y
 			if dy < 0 {
-				for y := startY; y > startY+dy; y-- {
+				for y := startY; y > startY+dy-1; y-- {
 					curr.Y = y
 					w.Points[curr] = true
 				}
 			} else {
-				for y := startY; y < startY+dy; y++ {
+				for y := startY; y < startY+dy+1; y++ {
 					curr.Y = y
 					w.Points[curr] = true
 				}
@@ -70,6 +74,12 @@ func (w *Wire) GetPoints() {
 		}
 
 	}
+
+	delete(w.Points, Pos{
+		X: 0,
+		Y: 0,
+	})
+
 }
 
 type Command struct {
@@ -128,7 +138,7 @@ func GetWires(data []byte) ([]Wire, error) {
 
 }
 
-func SolvePartOne(wires []Wire) {
+func SolvePartOne(wires []Wire) int {
 
 	for _, wire := range wires {
 		wire.GetPoints()
@@ -141,12 +151,26 @@ func SolvePartOne(wires []Wire) {
 		}
 
 	}
-	fmt.Println(collissions)
+
+	var res int
+	for c := range collissions {
+		res = c.GetManhattanDistance()
+		break
+	}
+
+	for c := range collissions {
+		res = min(res, c.GetManhattanDistance())
+	}
+
+	return res
 
 }
 
 func main() {
-	data, err := common.ReadInput("inputExample.txt")
+	// data, err := common.ReadInput("inputExample.txt")
+	// data, err := common.ReadInput("inputExample2.txt")
+	// data, err := common.ReadInput("inputExample3.txt")
+	data, err := common.ReadInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -157,6 +181,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	SolvePartOne(wires)
+	res := SolvePartOne(wires)
+	fmt.Println(res)
 
 }
