@@ -37,8 +37,6 @@ func SolvePartOne(intCodes []int) int {
 			c = a + b
 		case 2:
 			c = a * b
-		default:
-			fmt.Println("boo")
 		}
 
 		dst := intCodes[i+3]
@@ -66,5 +64,16 @@ func main() {
 	intCodes[2] = 2
 	res := SolvePartOne(intCodes)
 	fmt.Println(res)
+
+	intCodes, err = GetIntCodes(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	intCodes[1] = 93
+	intCodes[2] = 42
+	res2 := SolvePartOne(intCodes)
+	fmt.Println(res2)
+	fmt.Println(100*93 + 42)
 
 }
