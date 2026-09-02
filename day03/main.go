@@ -21,11 +21,12 @@ func (p Pos) GetManhattanDistance() int {
 
 type Wire struct {
 	Commands []Command
-	Points   map[Pos]bool
+	Points   map[Pos]int
 }
 
 func (w *Wire) GetPoints() {
 	curr := Pos{X: 0, Y: 0}
+	time := 0
 
 	for _, cmd := range w.Commands {
 		dx := 0
@@ -46,12 +47,18 @@ func (w *Wire) GetPoints() {
 			if dx < 0 {
 				for x := startX; x > startX+dx-1; x-- {
 					curr.X = x
-					w.Points[curr] = true
+					if _, exists := w.Points[curr]; !exists {
+						w.Points[curr] = time
+					}
+					time++
 				}
 			} else {
 				for x := startX; x < startX+dx+1; x++ {
 					curr.X = x
-					w.Points[curr] = true
+					if _, exists := w.Points[curr]; !exists {
+						w.Points[curr] = time
+					}
+					time++
 				}
 			}
 
@@ -62,16 +69,25 @@ func (w *Wire) GetPoints() {
 			if dy < 0 {
 				for y := startY; y > startY+dy-1; y-- {
 					curr.Y = y
-					w.Points[curr] = true
+					if _, exists := w.Points[curr]; !exists {
+						w.Points[curr] = time
+					}
+					time++
 				}
 			} else {
 				for y := startY; y < startY+dy+1; y++ {
 					curr.Y = y
-					w.Points[curr] = true
+					if _, exists := w.Points[curr]; !exists {
+						w.Points[curr] = time
+					}
+					time++
 				}
 			}
 
 		}
+
+		// For loops progress time one too far
+		time--
 
 	}
 
@@ -128,10 +144,14 @@ func GetWires(data []byte) ([]Wire, error) {
 				Steps: steps,
 			})
 		}
-		res = append(res, Wire{
+
+		wire := Wire{
 			Commands: cmds,
-			Points:   map[Pos]bool{},
-		})
+			Points:   map[Pos]int{},
+		}
+		wire.GetPoints()
+
+		res = append(res, wire)
 	}
 
 	return res, nil
@@ -140,18 +160,14 @@ func GetWires(data []byte) ([]Wire, error) {
 
 func SolvePartOne(wires []Wire) int {
 
-	for _, wire := range wires {
-		wire.GetPoints()
-	}
-
 	collissions := make(map[Pos]bool)
 	for pos := range wires[0].Points {
 		if _, exists := wires[1].Points[pos]; exists {
 			collissions[pos] = true
 		}
-
 	}
 
+	// Set random value min
 	var res int
 	for c := range collissions {
 		res = c.GetManhattanDistance()
@@ -160,6 +176,34 @@ func SolvePartOne(wires []Wire) int {
 
 	for c := range collissions {
 		res = min(res, c.GetManhattanDistance())
+	}
+
+	return res
+
+}
+
+func SolvePartTwo(wires []Wire) int {
+
+	collissions := make(map[Pos]bool)
+	for pos := range wires[0].Points {
+		if _, exists := wires[1].Points[pos]; exists {
+			collissions[pos] = true
+		}
+	}
+
+	// Set random value min
+	var res int
+	for c := range collissions {
+		w0 := wires[0].Points[c]
+		w1 := wires[1].Points[c]
+		res = w0 + w1
+		break
+	}
+
+	for c := range collissions {
+		w0 := wires[0].Points[c]
+		w1 := wires[1].Points[c]
+		res = min(res, w0+w1)
 	}
 
 	return res
@@ -183,5 +227,8 @@ func main() {
 
 	res := SolvePartOne(wires)
 	fmt.Println(res)
+
+	res2 := SolvePartTwo(wires)
+	fmt.Println(res2)
 
 }
