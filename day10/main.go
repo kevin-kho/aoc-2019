@@ -2,15 +2,28 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"log"
+	"math"
+	"slices"
 
 	"github.com/kevin-kho/aoc-utilities/common"
 )
 
 type Pos struct {
-	X int
-	Y int
+	X       int
+	Y       int
+	Radians float64
+}
+
+func (p *Pos) CalculateRadian() {
+	rad := math.Atan2(float64(p.Y), float64(p.X))
+	if rad < 0 {
+		rad += 2 * math.Pi
+	}
+
+	p.Radians = rad
 }
 
 type Vector struct {
@@ -138,15 +151,97 @@ func SolvePartOne(grid [][]byte) Station {
 
 func SolvePartTwo(station Station, grid [][]byte) {
 
-	// gcdVector := slices.SortedFunc(maps.Keys(station.Asteroids), func(a, b Station) int {})
-	// fmt.Println(gcdVector)
+	// Sort gcdVector by polar coordinates
+	// Always positive radian
+	var gcdVectors []Pos
+	for gcdVector := range station.Asteroids {
+		gcdVector.CalculateRadian()
+		gcdVectors = append(gcdVectors, gcdVector)
+	}
+	slices.SortFunc(gcdVectors, func(a, b Pos) int {
+		return cmp.Compare(a.Radians, b.Radians)
+	})
+
+	// Distribute Pos into cartesian quadrants
+	var q1 []Pos
+	var q2 []Pos
+	var q3 []Pos
+	var q4 []Pos
+	for _, g := range gcdVectors {
+		if 0 <= g.Radians && g.Radians <= math.Pi/2 {
+			q1 = append(q1, g)
+		} else if math.Pi/2 <= g.Radians && g.Radians <= math.Pi {
+			q2 = append(q2, g)
+		} else if math.Pi <= g.Radians && g.Radians <= (3*math.Pi/2) {
+			q3 = append(q3, g)
+		} else {
+			q4 = append(q4, g)
+		}
+	}
+
+	// order goes q1 -> q4 -> q3 -> q2
+	var order []Pos
+	slices.Reverse(q1)
+	slices.Reverse(q2)
+	slices.Reverse(q3)
+	slices.Reverse(q4)
+	order = append(order, q1...)
+	order = append(order, q4...)
+	order = append(order, q3...)
+	order = append(order, q2...)
+	for i, p := range order {
+		p.Radians = 0
+		order[i] = p
+	}
+
+	var count int
+	i := 0
+
+	// WIP: sort asteroids based on how close they are from the Station
+	mp := station.Asteroids
+	for vec, asteroids := range mp {
+		slices.SortFunc(asteroids, func(a, b Pos) int {
+
+			var aFactor int
+			var bFactor int
+
+			if vec.X == 0 {
+				aFactor = (a.Y - station.Y) / vec.Y
+				bFactor = (b.Y - station.Y) / vec.Y
+			} else {
+				aFactor = (a.X - station.X) / vec.X
+				bFactor = (b.X - station.X) / vec.X
+			}
+
+			return cmp.Compare(aFactor, bFactor)
+		})
+		mp[vec] = asteroids
+	}
+
+	var destroyed Pos
+	for count < 200 {
+		vec := order[i]
+		if len(mp[vec]) == 0 {
+			i++
+			i = i % len(order)
+			continue
+		}
+
+		destroyed = mp[vec][0]
+		mp[vec] = mp[vec][1:]
+
+		count++
+		i++
+		i = i % len(order)
+	}
+	fmt.Println(destroyed)
 
 }
 
 func main() {
 	// data, err := common.ReadInput("inputExample.txt")
-	// data, err := common.ReadInput("inputExample2.txt")
-	data, err := common.ReadInput("input.txt")
+	data, err := common.ReadInput("inputExample2.txt")
+	// data, err := common.ReadInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -154,7 +249,7 @@ func main() {
 
 	grid := CreateGrid(data)
 	res := SolvePartOne(grid)
-	fmt.Println(len(res.Asteroids))
+	fmt.Println(res.Pos, len(res.Asteroids))
 
 	SolvePartTwo(res, grid)
 
