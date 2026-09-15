@@ -19,7 +19,7 @@ type Vector struct {
 
 type Station struct {
 	Pos
-	Asteroids int
+	Asteroids map[Pos][]Pos
 }
 
 func CreateVector(src Pos, dst Pos) Vector {
@@ -124,15 +124,19 @@ func SolvePartOne(grid [][]byte) Station {
 	for y, row := range grid {
 		for x := range row {
 			if grid[y][x] == '#' {
-				asteroids := len(Bfs(Pos{X: x, Y: y}, grid))
-				if asteroids > res.Asteroids {
-					res = Station{X: x, Y: y, Asteroids: asteroids}
+				asteroidMp := Bfs(Pos{X: x, Y: y}, grid)
+				if len(asteroidMp) > len(res.Asteroids) {
+					res = Station{X: x, Y: y, Asteroids: asteroidMp}
 				}
 			}
 		}
 	}
 
 	return res
+
+}
+
+func SolvePartTwo(station Station, grid [][]byte) {
 
 }
 
@@ -147,6 +151,8 @@ func main() {
 
 	grid := CreateGrid(data)
 	res := SolvePartOne(grid)
-	fmt.Println(res.Asteroids)
+	fmt.Println(len(res.Asteroids))
+
+	SolvePartTwo(res, grid)
 
 }
