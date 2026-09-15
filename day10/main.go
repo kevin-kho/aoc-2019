@@ -61,10 +61,10 @@ func Bfs(src Pos, grid [][]byte) map[Pos][]Pos {
 	Y := len(grid)
 	X := len(grid[0])
 	Deltas := []Pos{
-		{X: 1, Y: 0},
-		{X: -1, Y: 0},
 		{X: 0, Y: 1},
+		{X: 1, Y: 0},
 		{X: 0, Y: -1},
+		{X: -1, Y: 0},
 	}
 
 	seenPos := make(map[Pos]bool)        // used to prevent backtracking
@@ -137,6 +137,9 @@ func SolvePartOne(grid [][]byte) Station {
 }
 
 func SolvePartTwo(station Station, grid [][]byte) {
+
+	// gcdVector := slices.SortedFunc(maps.Keys(station.Asteroids), func(a, b Station) int {})
+	// fmt.Println(gcdVector)
 
 }
 
