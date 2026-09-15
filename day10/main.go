@@ -56,7 +56,7 @@ func (p Vector) DivideVectorByGcd() Pos {
 
 }
 
-func Bfs(src Pos, grid [][]byte) int {
+func Bfs(src Pos, grid [][]byte) map[Pos][]Pos {
 
 	Y := len(grid)
 	X := len(grid[0])
@@ -67,8 +67,8 @@ func Bfs(src Pos, grid [][]byte) int {
 		{X: 0, Y: -1},
 	}
 
-	seenPos := make(map[Pos]bool)       // used to prevent backtracking
-	seenGcdVector := make(map[Pos]bool) // used to determine if asteroid is viewable
+	seenPos := make(map[Pos]bool)        // used to prevent backtracking
+	seenGcdVector := make(map[Pos][]Pos) // key: gcdVector, value: slice of all vectors along that gcdVector
 
 	queue := []Pos{src}
 
@@ -90,7 +90,7 @@ func Bfs(src Pos, grid [][]byte) int {
 		if grid[pos.Y][pos.X] == '#' && src != pos {
 			vec := CreateVector(src, pos)
 			gcdVec := vec.DivideVectorByGcd()
-			seenGcdVector[gcdVec] = true
+			seenGcdVector[gcdVec] = append(seenGcdVector[gcdVec], pos)
 		}
 
 		// BFS outwards
@@ -108,7 +108,7 @@ func Bfs(src Pos, grid [][]byte) int {
 
 	}
 
-	return len(seenGcdVector)
+	return seenGcdVector
 
 }
 
@@ -124,7 +124,7 @@ func SolvePartOne(grid [][]byte) Station {
 	for y, row := range grid {
 		for x := range row {
 			if grid[y][x] == '#' {
-				asteroids := Bfs(Pos{X: x, Y: y}, grid)
+				asteroids := len(Bfs(Pos{X: x, Y: y}, grid))
 				if asteroids > res.Asteroids {
 					res = Station{X: x, Y: y, Asteroids: asteroids}
 				}
