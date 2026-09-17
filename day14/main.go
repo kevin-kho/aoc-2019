@@ -96,7 +96,6 @@ func SolvePartOne(products []Product) {
 	for _, p := range products {
 		mp[p.Name] = p
 	}
-	fmt.Println(mp)
 	var oreCount int
 
 	var dfs func(curr Product, need int)
@@ -118,13 +117,82 @@ func SolvePartOne(products []Product) {
 		}
 	}
 
-	dfs(mp["FUEL"], 1)
+	reactCt := make(map[string]int)
+	var dfs2 func(curr Product, need int)
+	dfs2 = func(curr Product, need int) {
+		mul := 1
+		if need > curr.Quantity {
+			mul = need / curr.Quantity
+			if need%curr.Quantity != 0 {
+				mul++
+			}
+		}
+		for _, r := range curr.Reagent {
+			if r.Name == "ORE" {
+				reactCt[curr.Name] += mul * curr.Quantity
+			} else {
+				dfs2(mp[r.Name], r.Quantity*mul)
+
+			}
+		}
+	}
+
+	isBaseEle := make(map[string]bool)
+	for _, p := range products {
+		if len(p.Reagent) == 1 && p.Reagent[0].Name == "ORE" {
+			isBaseEle[p.Name] = true
+		}
+	}
+
+	var dfs3 func(curr Product, need int)
+	dfs3 = func(curr Product, need int) {
+
+		// mul := 1
+		// if need > curr.Quantity {
+		// 	mul = need / curr.Quantity
+		// 	if need%curr.Quantity != 0 {
+		// 		mul++
+		// 	}
+		// }
+
+		mul := need / curr.Quantity
+		if need%curr.Quantity != 0 {
+			mul++
+		}
+
+		for _, r := range curr.Reagent {
+			if isBaseEle[r.Name] {
+				reactCt[r.Name] += mul * r.Quantity
+			} else {
+				dfs3(mp[r.Name], r.Quantity*mul)
+			}
+
+		}
+	}
+
+	// dfs(mp["FUEL"], 1)
+	// dfs2(mp["FUEL"], 1)
+	dfs3(mp["FUEL"], 1)
+
+	fmt.Println(reactCt)
+	for ele := range reactCt {
+		fmt.Println(mp[ele])
+		for reactCt[ele] > 0 {
+			reactCt[ele] -= mp[ele].Quantity
+			oreCount += mp[ele].Reagent[0].Quantity
+		}
+	}
 	fmt.Println(oreCount)
 
 }
 
 func main() {
-	data, err := common.ReadInput("inputExample.txt")
+	// data, err := common.ReadInput("inputExample.txt")
+	// data, err := common.ReadInput("inputExample2.txt")
+	// data, err := common.ReadInput("inputExample3.txt")
+	// data, err := common.ReadInput("inputExample4.txt")
+	// data, err := common.ReadInput("inputExample5.txt")
+	data, err := common.ReadInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
