@@ -147,18 +147,11 @@ func SolvePartOne(products []Product) {
 	var dfs3 func(curr Product, need int)
 	dfs3 = func(curr Product, need int) {
 
-		// mul := 1
-		// if need > curr.Quantity {
-		// 	mul = need / curr.Quantity
-		// 	if need%curr.Quantity != 0 {
-		// 		mul++
-		// 	}
-		// }
-
 		mul := need / curr.Quantity
 		if need%curr.Quantity != 0 {
 			mul++
 		}
+		fmt.Printf("curr.Element %v; need: %v, curr.Quantity:%v, mul: %v\n", curr.Element, need, curr.Quantity, mul)
 
 		for _, r := range curr.Reagent {
 			if isBaseEle[r.Name] {
@@ -177,11 +170,16 @@ func SolvePartOne(products []Product) {
 	fmt.Println(reactCt)
 	for ele := range reactCt {
 		fmt.Println(mp[ele])
-		for reactCt[ele] > 0 {
-			reactCt[ele] -= mp[ele].Quantity
-			oreCount += mp[ele].Reagent[0].Quantity
+
+		m := reactCt[ele] / mp[ele].Quantity
+		if reactCt[ele]%mp[ele].Quantity != 0 {
+			m++
 		}
+
+		oreCount += mp[ele].Reagent[0].Quantity * m
+
 	}
+	fmt.Println(reactCt)
 	fmt.Println(oreCount)
 
 }
@@ -190,9 +188,9 @@ func main() {
 	// data, err := common.ReadInput("inputExample.txt")
 	// data, err := common.ReadInput("inputExample2.txt")
 	// data, err := common.ReadInput("inputExample3.txt")
-	// data, err := common.ReadInput("inputExample4.txt")
+	data, err := common.ReadInput("inputExample4.txt")
 	// data, err := common.ReadInput("inputExample5.txt")
-	data, err := common.ReadInput("input.txt")
+	// data, err := common.ReadInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
